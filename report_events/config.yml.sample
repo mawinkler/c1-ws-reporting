@@ -1,0 +1,12 @@
+deepsecurity:
+  server: https://app.deepsecurity.trendmicro.com:443
+  api_key: <api key>
+  tenant: <tenant name>
+  tenant_id: <tenant id>
+  token: <token>
+  username: <cloud one username>
+  password: <cloud one password>
+  # timespan from
+  timespan_from: "02.08.2021"
+  # timespan to
+  timespan_to: "02.08.2021"
