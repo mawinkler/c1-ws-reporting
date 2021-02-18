@@ -181,7 +181,8 @@ def build_computer_rules(dsm_url, api_key, id_identifier_name):
         print("Processing Computer ID " + str(computer["ID"]))
 
         url = (
-            "https://" + dsm_url
+            "https://"
+            + dsm_url
             + "/api/computers/"
             + str(computer["ID"])
             + "/intrusionprevention/assignments"
