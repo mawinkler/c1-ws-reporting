@@ -1,0 +1,5 @@
+deepsecurity:
+  server: https://app.deepsecurity.trendmicro.com:443
+  api_key: <api key>
+
+report_file: "report.csv"

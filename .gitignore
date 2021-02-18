@@ -1,2 +1,6 @@
 report_events/config.yml
 .DS_Store
+antimalware_report/config.yml
+host_protection_report/config.yml
+ips_report/config.yml
+ips_report/report.csv
