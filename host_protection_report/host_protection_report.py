@@ -1,7 +1,15 @@
 #!/usr/bin/python3
+# import os, ssl
+# if (not os.environ.get('PYTHONHTTPSVERIFY', '') and getattr(ssl, '_create_unverified_context', None)):
+#   ssl._create_default_https_context = ssl._create_unverified_context
+
 import ssl
 
-# ssl._create_default_https_context = ssl._create_unverified_context
+ssl._create_default_https_context = ssl._create_unverified_context
+import urllib3
+
+urllib3.disable_warnings()
+
 
 import requests
 from requests import Session
@@ -27,6 +35,9 @@ def soap_auth(client, tenant, username, password):
     return client.service.authenticateTenant(
         tenantName=tenant, username=username, password=password
     )
+    # return client.service.authenticateTenant(
+    #     username=username, password=password
+    # )
 
 
 def logout(client, sID):
@@ -48,10 +59,11 @@ def deep_security_usage_query(
     timespan_to,
 ):
 
-    sID = soap_auth(client, "Trend Micro Bocking", dsm_user, dsm_password)
+    sID = soap_auth(client, dsm_tenant, dsm_user, dsm_password)
     tID = dsm_tenant_id
 
     print("sID: {}".format(sID))
+    print("sID: {}".format(sID.split("_", 1)[1]))
     print("tID: {}".format(tID))
 
     today = datetime.now()
@@ -71,14 +83,15 @@ def deep_security_usage_query(
     )
     try:
         url = "https://" + dsm_url
-        url += "/rest/monitoring/usages/hosts/protection?tID=" + str(tID) + "&sID="
+        # url += "/rest/monitoring/usages/hosts/protection?tID=" + str(tID) + "&sID="
+        url += "/rest/monitoring/usages/hosts/protection?" + "sID="
         url += sID
         url += "&from=" + timespan_from + "&to=" + timespan_to
         data = {}
         post_header = {"Content-type": "application/json", "api-version": "v1"}
 
         print(url)
-        pp.pprint(requests.get(url, headers=post_header, verify=False).content)
+        print(requests.get(url, headers=post_header, verify=False).content)
         response = xmltodict.parse(
             requests.get(
                 url, data=json.dumps(data), headers=post_header, verify=False
@@ -149,13 +162,12 @@ def main():
     timespan_to = cfg["deepsecurity"]["timespan_to"]
 
     session = Session()
-    session.verify = True
+    session.verify = False
     transport = Transport(session=session, timeout=1800)
     url = "https://{0}/webservice/Manager?WSDL".format(host)
     client = Client(url, transport=transport)
     factory = client.type_factory("ns0")
 
-    print("authenticated")
     # deep_security_usage_query(dsm_url, dsm_user, dsm_password, dsm_tenant, dsm_tenant_id, timespan_from, timespan_to)
     deep_security_usage_query(
         client, host, dsm_user, dsm_password, 0, dsm_tenant, timespan_from, timespan_to
