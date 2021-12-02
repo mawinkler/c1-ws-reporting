@@ -1,0 +1,7 @@
+# URL and API-Key for Workload / Deep Security
+deepsecurity:
+  server: workload.us-1.cloudone.trendmicro.com
+  api_key: <api key>
+
+# report file name
+report_file: "report.csv"

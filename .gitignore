@@ -5,3 +5,5 @@ config.yml.ws
 host_protection_report/config.yml
 report.csv
 pie.xlsx
+antimalware_report/pie.xlsx
+antimalware_report/report_events.txt

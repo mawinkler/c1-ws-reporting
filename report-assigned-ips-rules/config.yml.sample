@@ -1,0 +1,11 @@
+# URL and API-Key for Workload / Deep Security
+deepsecurity:
+  server: workload.us-1.cloudone.trendmicro.com
+  api_key: <api key>
+
+# report file name
+report_file: "report.csv"
+
+# single - creates one line for an assigned IPS rule, even if it covers multiple CVEs
+# multi - creates one line for an assgined IPS rule / CVE pair
+report_mode: single
