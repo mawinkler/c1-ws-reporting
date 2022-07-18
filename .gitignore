@@ -7,3 +7,5 @@ report.csv
 pie.xlsx
 antimalware_report/pie.xlsx
 antimalware_report/report_events.txt
+.dccache
+venv
