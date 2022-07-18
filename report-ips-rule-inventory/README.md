@@ -29,7 +29,7 @@ report_file: "report.csv"
 Ensure to have the requirements satisfied
 
 ```sh
-pip3 install -r requirements.txt --user
+pip3 install -r requirements.txt
 ```
 
 ## Run

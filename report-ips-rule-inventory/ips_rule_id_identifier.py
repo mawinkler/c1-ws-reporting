@@ -76,7 +76,7 @@ def build_id_identifier_name(ws_url, api_key):
         }
         post_header = {
             "Content-type": "application/json",
-            "api-secret-key": api_key,
+            "Authorization": f"ApiKey {api_key}",
             "api-version": "v1",
         }
         response = requests.post(

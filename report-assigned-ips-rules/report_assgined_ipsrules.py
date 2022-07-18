@@ -79,7 +79,7 @@ def build_id_identifier_name(ws_url, api_key):
 
         post_header = {
             "Content-type": "application/json",
-            "api-secret-key": api_key,
+            "Authorization": f"ApiKey {api_key}",
             "api-version": "v1",
         }
         response = requests.post(
@@ -137,7 +137,7 @@ def build_computer_rules(ws_url, api_key, id_identifier_name):
         url = "https://" + ws_url + "/api/computers/search"
         post_header = {
             "Content-type": "application/json",
-            "api-secret-key": api_key,
+            "Authorization": f"ApiKey {api_key}",
             "api-version": "v1",
         }
         if (GROUP_ID >= 0):
@@ -171,7 +171,7 @@ def build_computer_rules(ws_url, api_key, id_identifier_name):
 
         post_header = {
             "Content-type": "application/json",
-            "api-secret-key": api_key,
+            "Authorization": f"ApiKey {api_key}",
             "api-version": "v1",
         }
 
@@ -210,7 +210,7 @@ def build_computer_rules(ws_url, api_key, id_identifier_name):
         )
         post_header = {
             "Content-type": "application/json",
-            "api-secret-key": api_key,
+            "Authorization": f"ApiKey {api_key}",
             "api-version": "v1",
         }
         computer_rules = requests.get(url, headers=post_header, verify=True)
