@@ -1,0 +1,48 @@
+# Agent Deployment Report
+
+Configure by populating the `config.yml`
+
+```yaml
+deepsecurity:
+  # Deep Security DNS name or IP with port
+  server: 3.239.104.249:4119
+  # Deep Security as a Service
+  # server: app.deepsecurity.trendmicro.com:443
+  # Workload Security
+  # server: workload.trend-us-1.cloudone.trendmicro.com:443
+
+  # Type is 'ds' or 'ws'
+  type: ds
+
+  # API Key
+  api_key: "DS/WS API Key"
+
+  # Deep Security: Tenant ID
+  # Workload Security: Cloud One Tenant Name
+  tenant: 0
+
+  # Deep Security requires a username / password for SOAP.
+  # Not required for Workload Security
+  tenant_username: masteradmin
+  tenant_password: playground
+
+  # Timespan for events from mm.dd.yyyy
+  timespan_from: "01.03.2024"
+  # Timespan for events to mm.dd.yyyy
+  timespan_to: "03.18.2024"
+
+  # Enable or disable TLS Verify
+  tls_verify: False
+```
+
+Ensure to have the requirements satisfied
+
+```sh
+pip3 install -r requirements.txt
+```
+
+Run by
+
+```sh
+python3 agentdeployment_report.py
+```

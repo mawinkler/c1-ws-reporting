@@ -36,10 +36,17 @@ import yaml
 import logging
 import sys
 
+# import warnings
+
+
 # Constants
 RESULT_SET_SIZE = 1000
 # Group filter. -1 to disable it
 GROUP_ID = -1
+
+
+# if not sys.warnoptions:
+# 	warnings.simplefilter("ignore")
 
 _LOGGER = logging.getLogger(__name__)
 logging.basicConfig(
@@ -82,16 +89,15 @@ def build_id_identifier_name(ws_url, api_key):
 
         post_header = {
             "Content-type": "application/json",
-            "Authorization": f"ApiKey {api_key}",
+            "api-secret-key": f"{api_key}",
             "api-version": "v1",
         }
-        response = requests.post(url, data=json.dumps(data), headers=post_header, verify=True).json()
+        response = requests.post(url, data=json.dumps(data), headers=post_header, verify=False).json()
 
         # Error handling
         if "message" in response:
             if response["message"] == "Invalid API Key":
                 raise ValueError("Invalid API Key")
-
         rules = response["intrusionPreventionRules"]
 
         # Build dictionary
@@ -136,7 +142,7 @@ def build_computer_rules(ws_url, api_key, id_identifier_name):
         url = "https://" + ws_url + "/api/computers/search"
         post_header = {
             "Content-type": "application/json",
-            "Authorization": f"ApiKey {api_key}",
+            "api-secret-key": f"{api_key}",
             "api-version": "v1",
         }
         if GROUP_ID >= 0:
@@ -166,11 +172,11 @@ def build_computer_rules(ws_url, api_key, id_identifier_name):
 
         post_header = {
             "Content-type": "application/json",
-            "Authorization": f"ApiKey {api_key}",
+            "api-secret-key": f"{api_key}",
             "api-version": "v1",
         }
 
-        response = requests.post(url, data=json.dumps(data), headers=post_header, verify=True).json()
+        response = requests.post(url, data=json.dumps(data), headers=post_header, verify=False).json()
 
         # Error handling
         if "message" in response:
@@ -197,10 +203,10 @@ def build_computer_rules(ws_url, api_key, id_identifier_name):
         url = "https://" + ws_url + "/api/computers/" + str(computer["ID"]) + "/intrusionprevention/assignments"
         post_header = {
             "Content-type": "application/json",
-            "Authorization": f"ApiKey {api_key}",
+            "api-secret-key": f"{api_key}",
             "api-version": "v1",
         }
-        computer_rules = requests.get(url, headers=post_header, verify=True)
+        computer_rules = requests.get(url, headers=post_header, verify=False)
         computer_rules = computer_rules.json()
 
         info = {
@@ -277,4 +283,6 @@ def main():
 
 
 if __name__ == "__main__":
+    # Disable SSL/TLS verification for all requests
+    requests.packages.urllib3.disable_warnings()
     main()
