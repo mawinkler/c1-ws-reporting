@@ -1,0 +1,4 @@
+PyYAML
+Requests
+urllib3
+cefevent
