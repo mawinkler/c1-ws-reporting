@@ -1,9 +1,36 @@
 # Agent Deployment Report
 
+Currently composes CEF event, might change to ordinary syslog or some other format.
+
 Configure by populating the `config.yml`
 
 ```yaml
+deepsecurity:
+  # Deep Security DNS name or IP with port
+  server: 3.239.104.249:4119
+  # Deep Security as a Service
+  # server: app.deepsecurity.trendmicro.com:443
+  # Workload Security
+  # server: workload.trend-us-1.cloudone.trendmicro.com:443
 
+  # Type is 'ds' or 'ws'
+  type: ds
+
+  # API Key
+  api_key: "DS/WS API Key"
+
+  # Deep Security: Tenant ID
+  # Workload Security: Cloud One Tenant Name
+  tenant: 0
+
+  # Enable or disable TLS Verify
+  tls_verify: False
+
+# Log receiver
+logger:
+  host: 192.168.1.122
+  port: 50514
+  facility: local3
 ```
 
 Ensure to have the requirements satisfied
