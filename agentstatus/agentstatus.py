@@ -78,7 +78,7 @@ LEVEL = {"emergency": 0, "alert": 1, "critical": 2, "error": 3, "warning": 4, "n
 # STATUS_LEVEL_MAPPING = {"active": LEVEL["info"]}
 
 
-def syslog(message, level=LEVEL["notice"], facility=FACILITY["local3"], host="localhost", port=514):
+def syslog(message, level=LEVEL["notice"], facility=FACILITY["local3"], host="localhost", port=514) -> None:
     """
     Send syslog UDP packet to given host and port.
     """
@@ -88,7 +88,7 @@ def syslog(message, level=LEVEL["notice"], facility=FACILITY["local3"], host="lo
     sock.close()
 
 
-def get_paged_computers(headers, host, verify):
+def get_paged_computers(headers, host, verify) -> any:
     """Retrieve all computers"""
 
     paged_computers = []
@@ -97,6 +97,7 @@ def get_paged_computers(headers, host, verify):
 
     session_url = "https://" + host + "/api/computers/search"
     query = {"expand": ["computerStatus", "antiMalware"]}
+    # query = {"expand": ["all"]}
 
     try:
         while True:
@@ -143,7 +144,7 @@ def get_paged_computers(headers, host, verify):
         raise SystemExit(err)
 
 
-def get_indexed(data, index):
+def get_indexed(data, index) -> dict:
     """Index a list"""
 
     indexed_data = {}
@@ -153,7 +154,7 @@ def get_indexed(data, index):
     return indexed_data
 
 
-def get_computers_groups(headers, host, verify=True):
+def get_computers_groups(headers, host, verify=True) -> dict:
     """Retrieve computer groups"""
 
     session_url = "https://" + host + "/api/computergroups"
@@ -180,7 +181,7 @@ def get_computers_groups(headers, host, verify=True):
     return indexed_computer_groups
 
 
-def get_policies(headers, host, verify=True):
+def get_policies(headers, host, verify=True) -> any:
     """Retrive policies"""
 
     session_url = "https://" + host + "/api/policies"
@@ -203,7 +204,7 @@ def get_policies(headers, host, verify=True):
     return policies["policies"]
 
 
-def add_computer_info(headers, host, computers, verify):
+def add_computer_info(headers, host, tenant, computers, verify) -> list:
     """Add additional information to the computers list"""
 
     computers_groups = get_computers_groups(headers, host, verify)
@@ -213,6 +214,7 @@ def add_computer_info(headers, host, computers, verify):
 
     for computer in computers:
         computer_info = {
+            "tenant": tenant,
             "id": computer["ID"],
             "name": computer["hostName"],
             "os": computer["platform"],
@@ -231,7 +233,7 @@ def add_computer_info(headers, host, computers, verify):
     return computer_info_list
 
 
-def cef_computer(computer, facility, host, port):
+def cef_computer(computer, facility, host, port) -> None:
     """
     Creates a CEF event from a computer
 
@@ -246,10 +248,11 @@ def cef_computer(computer, facility, host, port):
     # message format:
     # CEF:Version|Device Vendor|Device Product|Rule ID|Name|Severity|Extension
     # sample:
-    # CEF:0|Trend Micro|Cloud One Container Security|1.0|0|TM-00000006|(T1059.004)Terminal shell in container|5|Extension
-    # Extension: ruleID clusterID clusterName mitigation policyName k8s.ns.name k8s.pod.name proc.cmdline proc.pname container.id
-    #            container.image.tag container.image.repository container.image.digest
-
+    # CEF:0|Trend Micro|Deep Security|1.0|0|Agent Status Report|6|Extension
+    #   Extension:
+    #   shost=ip-10-0-4-201.ec2.internal rt=2024-03-20 08:34:54.093413 cs1Label=agentStatus cs1=active
+    #   cs2Label=agentStatusMessages cs2=['Managed (Online)'] cs3Label=os cs3=Microsoft Windows Server 2022 (64 bit)  Build 20348
+    #   cs4Label=computerPolicy cs4=Playground One Windows Server cs6Label=tenant cs6=tenant0 msg=details am_mode\=on
     c = CEFEvent()
 
     match computer["agentStatus"]:
@@ -258,6 +261,7 @@ def cef_computer(computer, facility, host, port):
         case _:
             severity = "notice"
 
+    c.set_field("name", "Agent Status Report")
     c.set_field("shost", computer["name"])
     c.set_field("deviceVendor", "Trend Micro")
     c.set_field("deviceProduct", "Deep Security")
@@ -279,8 +283,8 @@ def cef_computer(computer, facility, host, port):
     # c.set_field("cs5Label", "computerStatus")
     # c.set_field("cs5", computer["agentStatus"])
 
-    # c.set_field("cs6Label", "computerStatus")
-    # c.set_field("cs6", computer["agentStatus"])
+    c.set_field("cs6Label", "tenant")
+    c.set_field("cs6", computer["tenant"])
 
     c.set_field("message", "details am_mode=" + computer["am_mode"])
 
@@ -289,91 +293,102 @@ def cef_computer(computer, facility, host, port):
     _LOGGER.debug("Runtime event sent")
 
 
-def main():
-    """Main function"""
-
-    # Read configuration
-    with open("config.yml", "r") as ymlfile:
-        cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)
-
-    host = cfg["deepsecurity"]["server"]
-    host_type = cfg["deepsecurity"].get("type", "ws")
-    api_key = cfg["deepsecurity"]["api_key"]
-    # tenant = cfg["deepsecurity"].get("tenant", None)
-    # tenant_username = cfg["deepsecurity"].get("tenant_username", None)
-    # tenant_password = cfg["deepsecurity"].get("tenant_password", None)
-    # timespan_from = cfg["deepsecurity"].get("timespan_from", None)
-    # timespan_to = cfg["deepsecurity"].get("timespan_to", None)
-    tls_verify = bool(cfg["deepsecurity"].get("tls_verify", True))
-    logger_host = cfg["logger"]["host"]
-    logger_port = cfg["logger"]["port"]
-    facility = cfg["logger"]["facility"]
-
-    # REST API
-    if tls_verify is False:
-        _LOGGER.info("Disabling TLS verify")
-        ssl._create_default_https_context = ssl._create_unverified_context
-        urllib3.disable_warnings()
-
+def query(host_type, host, tenant, api_key, verify) -> list:
     # Authentication for DS and WS
     if host_type == "ws":
         headers = {"api-version": "v1", "Authorization": f"ApiKey {api_key}"}
     else:
         headers = {"api-version": "v1", "api-secret-key": f"{api_key}"}
 
-    #
     # Query Computer Status
-    #
-    _LOGGER.info("Retrieving computers...")
-    # computers = get_paged_computers(headers, host, verify=tls_verify)
-    # computers_info = add_computer_info(headers, host, computers, verify=tls_verify)
+    _LOGGER.info("Retrieving computers of tenant %s", tenant)
+    computers = get_paged_computers(headers, host, verify=verify)
+    computers_info = add_computer_info(headers, host, tenant, computers, verify=verify)
     # indexed_computers = get_indexed(data=computers_info, index="id")
 
-    # pp.pprint(indexed_computers)
+    pp.pprint(computers_info)
 
-    computers_info = [
-        {
-            "agentStatus": "active",
-            "agentStatusMessages": ["Managed (Online)"],
-            "am_mode": "on",
-            "id": 1,
-            "name": "10.0.0.100",
-            "os": "Red Hat Enterprise 9 (64 bit) (5.14.0-284.30.1.el9_2.x86_64)",
-            "policy": "Deep Security Manager",
-        },
-        {
-            "agentStatus": "active",
-            "agentStatusMessages": ["Managed (Online)"],
-            "am_mode": "on",
-            "id": 2,
-            "name": "ip-10-0-4-194.ec2.internal",
-            "os": "Amazon Linux 2 (64 bit) (4.14.336-257.562.amzn2.x86_64)",
-            "policy": "Playground One Linux Server",
-        },
-        {
-            "agentStatus": "active",
-            "agentStatusMessages": ["Managed (Online)"],
-            "am_mode": "on",
-            "id": 3,
-            "name": "ip-10-0-4-90.ec2.internal",
-            "os": "Ubuntu Linux 20 (64 bit) (5.15.0-1041-aws)",
-            "policy": "Playground One Linux Server",
-        },
-        {
-            "agentStatus": "active",
-            "agentStatusMessages": ["Managed (Online)"],
-            "am_mode": "on",
-            "id": 4,
-            "name": "ip-10-0-4-195.ec2.internal",
-            "os": "Microsoft Windows Server 2022 (64 bit)  Build 20348",
-            "policy": "Playground One Windows Server",
-        },
-    ]
+    return computers_info
 
-    if len(computers_info) > 0:
-        for computer in computers_info:
+
+def send(computers, facility, logger_host, logger_port) -> list:
+    if len(computers) > 0:
+        for computer in computers:
             cef_computer(computer, facility, logger_host, logger_port)
+
+
+def main() -> None:
+    """Main function"""
+
+    # Read configuration
+    with open("config.yml", "r", encoding="utf-8") as ymlfile:
+        cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)
+
+    host = cfg["deepsecurity"]["server"]
+    host_type = cfg["deepsecurity"].get("type", "ws")
+    api_key = cfg["deepsecurity"].get("api_key", None)
+    api_keys = cfg["deepsecurity"].get("api_keys", None)
+    tls_verify = bool(cfg["deepsecurity"].get("tls_verify", True))
+
+    logger_host = cfg["logger"]["host"]
+    logger_port = cfg["logger"]["port"]
+    facility = cfg["logger"]["facility"]
+
+    if tls_verify is False:
+        _LOGGER.info("Disabling TLS verify")
+        ssl._create_default_https_context = ssl._create_unverified_context
+        urllib3.disable_warnings()
+
+    if api_keys is not None:
+        for tenant, api_key in api_keys.items():
+            computers = query(host_type, host, tenant, api_key, verify=tls_verify)
+            send(computers, facility, logger_host, logger_port)
+    elif api_key is not None:
+        computers = query(host_type, host, "tenant0", api_key, verify=tls_verify)
+        send(computers, facility, logger_host, logger_port)
 
 
 if __name__ == "__main__":
     main()
+
+
+
+            # computers_info = [
+            #     {
+            #         "agentStatus": "active",
+            #         "agentStatusMessages": ["Managed (Online)"],
+            #         "am_mode": "on",
+            #         "id": 1,
+            #         "name": "10.0.0.100",
+            #         "os": "Red Hat Enterprise 9 (64 bit) (5.14.0-284.30.1.el9_2.x86_64)",
+            #         "policy": "Deep Security Manager",
+            #     },
+            #     {
+            #         "agentStatus": "active",
+            #         "agentStatusMessages": ["Managed (Online)"],
+            #         "am_mode": "on",
+            #         "id": 2,
+            #         "name": "ip-10-0-4-194.ec2.internal",
+            #         "os": "Amazon Linux 2 (64 bit) (4.14.336-257.562.amzn2.x86_64)",
+            #         "policy": "Playground One Linux Server",
+            #     },
+            #     {
+            #         "agentStatus": "active",
+            #         "agentStatusMessages": ["Managed (Online)"],
+            #         "am_mode": "on",
+            #         "id": 3,
+            #         "name": "ip-10-0-4-90.ec2.internal",
+            #         "os": "Ubuntu Linux 20 (64 bit) (5.15.0-1041-aws)",
+            #         "policy": "Playground One Linux Server",
+            #     },
+            #     {
+            #         "agentStatus": "active",
+            #         "agentStatusMessages": ["Managed (Online)"],
+            #         "am_mode": "on",
+            #         "id": 4,
+            #         "name": "ip-10-0-4-195.ec2.internal",
+            #         "os": "Microsoft Windows Server 2022 (64 bit)  Build 20348",
+            #         "policy": "Playground One Windows Server",
+            #     },
+            # ]
+

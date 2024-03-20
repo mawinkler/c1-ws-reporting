@@ -19,9 +19,12 @@ deepsecurity:
   # API Key
   api_key: "DS/WS API Key"
 
-  # Deep Security: Tenant ID
-  # Workload Security: Cloud One Tenant Name
-  tenant: 0
+  # API Keys in multi tenant mode
+  # If defined, they overwrite api_key
+  api_keys:
+    tenant0: "DS API Key for tenant0"
+    tenant1: "DS API Key for tenant1"
+    tenant2: "DS API Key for tenant2"
 
   # Enable or disable TLS Verify
   tls_verify: False
