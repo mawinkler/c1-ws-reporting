@@ -77,7 +77,6 @@ LEVEL = {"emergency": 0, "alert": 1, "critical": 2, "error": 3, "warning": 4, "n
 
 # STATUS_LEVEL_MAPPING = {"active": LEVEL["info"]}
 
-
 def syslog(message, level=LEVEL["notice"], facility=FACILITY["local3"], host="localhost", port=514) -> None:
     """
     Send syslog UDP packet to given host and port.
@@ -86,7 +85,6 @@ def syslog(message, level=LEVEL["notice"], facility=FACILITY["local3"], host="lo
     data = "<%d>%s" % (level + facility * 8, message)
     sock.sendto(data.encode(), (host, port))
     sock.close()
-
 
 def get_paged_computers(headers, host, verify) -> any:
     """Retrieve all computers"""
@@ -351,44 +349,41 @@ def main() -> None:
 if __name__ == "__main__":
     main()
 
-
-
-            # computers_info = [
-            #     {
-            #         "agentStatus": "active",
-            #         "agentStatusMessages": ["Managed (Online)"],
-            #         "am_mode": "on",
-            #         "id": 1,
-            #         "name": "10.0.0.100",
-            #         "os": "Red Hat Enterprise 9 (64 bit) (5.14.0-284.30.1.el9_2.x86_64)",
-            #         "policy": "Deep Security Manager",
-            #     },
-            #     {
-            #         "agentStatus": "active",
-            #         "agentStatusMessages": ["Managed (Online)"],
-            #         "am_mode": "on",
-            #         "id": 2,
-            #         "name": "ip-10-0-4-194.ec2.internal",
-            #         "os": "Amazon Linux 2 (64 bit) (4.14.336-257.562.amzn2.x86_64)",
-            #         "policy": "Playground One Linux Server",
-            #     },
-            #     {
-            #         "agentStatus": "active",
-            #         "agentStatusMessages": ["Managed (Online)"],
-            #         "am_mode": "on",
-            #         "id": 3,
-            #         "name": "ip-10-0-4-90.ec2.internal",
-            #         "os": "Ubuntu Linux 20 (64 bit) (5.15.0-1041-aws)",
-            #         "policy": "Playground One Linux Server",
-            #     },
-            #     {
-            #         "agentStatus": "active",
-            #         "agentStatusMessages": ["Managed (Online)"],
-            #         "am_mode": "on",
-            #         "id": 4,
-            #         "name": "ip-10-0-4-195.ec2.internal",
-            #         "os": "Microsoft Windows Server 2022 (64 bit)  Build 20348",
-            #         "policy": "Playground One Windows Server",
-            #     },
-            # ]
-
+        # computers = [
+        #     {
+        #         "agentStatus": "active",
+        #         "agentStatusMessages": ["Managed (Online)"],
+        #         "am_mode": "on",
+        #         "id": 1,
+        #         "name": "10.0.0.100",
+        #         "os": "Red Hat Enterprise 9 (64 bit) (5.14.0-284.30.1.el9_2.x86_64)",
+        #         "policy": "Deep Security Manager",
+        #     },
+        #     {
+        #         "agentStatus": "active",
+        #         "agentStatusMessages": ["Managed (Online)"],
+        #         "am_mode": "on",
+        #         "id": 2,
+        #         "name": "ip-10-0-4-194.ec2.internal",
+        #         "os": "Amazon Linux 2 (64 bit) (4.14.336-257.562.amzn2.x86_64)",
+        #         "policy": "Playground One Linux Server",
+        #     },
+        #     {
+        #         "agentStatus": "active",
+        #         "agentStatusMessages": ["Managed (Online)"],
+        #         "am_mode": "on",
+        #         "id": 3,
+        #         "name": "ip-10-0-4-90.ec2.internal",
+        #         "os": "Ubuntu Linux 20 (64 bit) (5.15.0-1041-aws)",
+        #         "policy": "Playground One Linux Server",
+        #     },
+        #     {
+        #         "agentStatus": "active",
+        #         "agentStatusMessages": ["Managed (Online)"],
+        #         "am_mode": "on",
+        #         "id": 4,
+        #         "name": "ip-10-0-4-195.ec2.internal",
+        #         "os": "Microsoft Windows Server 2022 (64 bit)  Build 20348",
+        #         "policy": "Playground One Windows Server",
+        #     },
+        # ]

@@ -2,6 +2,10 @@
 
 Currently composes CEF event, might change to ordinary syslog or some other format.
 
+Uses [cefevent](https://github.com/kamushadenes/cefevent.git) by kamushadenes.
+
+## Configure
+
 Configure by populating the `config.yml`
 
 ```yaml
@@ -79,6 +83,10 @@ volumes:
   opt-splunk-etc:
   opt-splunk-var:
 ```
+
+## Configure Splunk
+
+Basic settings:
 
 - Install the CEF Extraction Plug-In
 - Input Settings
